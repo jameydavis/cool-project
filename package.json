@@ -1,0 +1,23 @@
+{
+  "name": "cool-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:css && npm run build:js",
+    "build:css": "esbuild app/assets/stylesheets/astryx.css --bundle --outfile=app/assets/builds/astryx.css --loader:.css=css",
+    "build:js": "esbuild app/javascript/astryx_app.jsx --bundle --outfile=app/assets/builds/astryx_app.js --loader:.jsx=jsx --format=esm",
+    "watch:css": "npm run build:css -- --watch",
+    "watch:js": "npm run build:js -- --watch",
+    "astryx": "node node_modules/@astryxdesign/cli/bin/astryx.mjs"
+  },
+  "dependencies": {
+    "@astryxdesign/cli": "^0.1.2",
+    "@astryxdesign/core": "^0.1.2",
+    "@astryxdesign/theme-neutral": "^0.1.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}

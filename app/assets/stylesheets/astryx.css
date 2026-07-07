@@ -1,0 +1,12 @@
+@import "@astryxdesign/core/reset.css";
+@import "@astryxdesign/core/astryx.css";
+@import "@astryxdesign/theme-neutral/theme.css";
+
+html,
+body {
+  min-height: 100%;
+}
+
+#astryx-root {
+  min-height: 100dvh;
+}

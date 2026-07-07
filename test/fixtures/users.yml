@@ -1,0 +1,14 @@
+one:
+  email: one@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+
+two:
+  email: two@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  preferred_name: Alex Rivera
+  phone_number: "555-0100"
+  address_line1: 456 Oak Ave
+  city: Portland
+  state: OR
+  postal_code: "97201"
+  settings_updated_at: <%= Time.zone.parse("2026-01-01 12:00:00") %>
