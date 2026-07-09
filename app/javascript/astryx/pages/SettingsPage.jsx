@@ -10,7 +10,9 @@ import { Banner } from "@astryxdesign/core/Banner";
 import { Avatar } from "@astryxdesign/core/Avatar";
 import { VStack, HStack } from "@astryxdesign/core/Layout";
 import { Link } from "@astryxdesign/core/Link";
+import { Selector } from "@astryxdesign/core/Selector";
 import { showToast } from "../components/FlashToasts";
+import { useThemePreference } from "../ThemeProvider";
 import { withCacheBust } from "../utils/avatar";
 
 const TIMEZONES = [
@@ -32,6 +34,7 @@ function selectedAvatarFile(value) {
 
 export function SettingsPage({ paths, settings = {}, csrfToken, onAvatarUpdated }) {
   const toast = useToast();
+  const { themeId, setThemeId, themeOptions } = useThemePreference();
   const initial = settings.user || {};
   const [form, setForm] = useState({
     preferredName: initial.preferredName || "",
@@ -188,6 +191,21 @@ export function SettingsPage({ paths, settings = {}, csrfToken, onAvatarUpdated 
             <Text type="supporting">Update your profile information and preferences.</Text>
           </VStack>
         )}
+
+        <VStack gap={3}>
+          <Heading level={2}>Appearance</Heading>
+          <Selector
+            label="Theme"
+            description="Choose a color theme for the entire site."
+            options={themeOptions.map((option) => ({
+              value: option.value,
+              label: option.label,
+            }))}
+            value={themeId}
+            onChange={setThemeId}
+            placeholder="Select a theme"
+          />
+        </VStack>
 
         <VStack gap={3}>
           <Heading level={2}>Profile photo</Heading>

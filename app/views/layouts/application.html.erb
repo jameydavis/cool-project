@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="system" data-astryx-theme="neutral">
+<html lang="en" data-theme="system">
   <head>
     <title><%= content_for(:title) || "Cool Project" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -10,6 +10,19 @@
     <%= csp_meta_tag %>
 
     <%= yield :head %>
+
+    <script>
+      (function () {
+        var key = "cool-project-theme";
+        var valid = ["neutral", "butter", "chocolate", "gothic", "matcha", "stone", "y2k"];
+        var stored = localStorage.getItem(key) || "neutral";
+        if (valid.indexOf(stored) === -1) stored = "neutral";
+        document.documentElement.setAttribute("data-astryx-theme", stored);
+        if (stored === "gothic") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
