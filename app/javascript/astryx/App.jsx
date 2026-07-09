@@ -29,7 +29,7 @@ export function App(props) {
   const content = (() => {
     switch (page) {
       case "dashboard":
-        return <DashboardPage paths={paths} user={currentUser} />;
+        return <DashboardPage user={currentUser} />;
       case "settings":
         return (
           <SettingsPage
@@ -49,7 +49,7 @@ export function App(props) {
         return <PasswordResetEditPage paths={paths} auth={auth} csrfToken={csrfToken} />;
       default:
         return currentUser ? (
-          <DashboardPage paths={paths} user={currentUser} />
+          <DashboardPage user={currentUser} />
         ) : (
           <SignInPage paths={paths} auth={auth} csrfToken={csrfToken} />
         );

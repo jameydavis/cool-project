@@ -5,6 +5,7 @@ import { TopNavItem } from "@astryxdesign/core/TopNav";
 import { Button } from "@astryxdesign/core/Button";
 import { VStack } from "@astryxdesign/core/Layout";
 import { AppBrandHeading } from "./AppBrandHeading";
+import { ProfileIncompleteBanner } from "./ProfileIncompleteBanner";
 
 function SignOutForm({ paths, csrfToken }) {
   return (
@@ -43,13 +44,18 @@ export function AppLayout({ paths, user, authLayout, currentPage, children }) {
     </>
   );
 
+  const showProfileBanner = user && !user.profileComplete;
+
   return (
     <AppShell
       height="auto"
       contentPadding={4}
       variant="elevated"
       topNav={
-        <TopNav heading={brandHeading} endContent={endContent} />
+        <>
+          <TopNav heading={brandHeading} endContent={endContent} />
+          {showProfileBanner ? <ProfileIncompleteBanner paths={paths} /> : null}
+        </>
       }
     >
       {children}
