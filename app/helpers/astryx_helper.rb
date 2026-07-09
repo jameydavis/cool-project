@@ -1,4 +1,6 @@
 module AstryxHelper
+  include UserAvatarHelper
+
   def astryx_payload
     {
       page: astryx_page_name,
@@ -28,6 +30,7 @@ module AstryxHelper
     when [ "users/sessions", "new" ] then "sign_in"
     when [ "users/registrations", "new" ] then "sign_up"
     when [ "devise/passwords", "new" ] then "password_reset"
+    when [ "devise/passwords", "edit" ], [ "devise/passwords", "update" ] then "password_reset_edit"
     end
   end
 
@@ -36,6 +39,7 @@ module AstryxHelper
       root: root_path,
       settings: edit_settings_path,
       settingsUpdate: settings_path,
+      settingsAvatarUpdate: avatar_settings_path,
       signIn: user_session_path,
       signInPage: root_path,
       signOut: destroy_user_session_path,
@@ -53,7 +57,9 @@ module AstryxHelper
       email: current_user.email,
       displayName: current_user.display_name,
       profileComplete: current_user.profile_complete?,
-      profileSetupNeeded: current_user.profile_setup_needed?
+      profileSetupNeeded: current_user.profile_setup_needed?,
+      avatarUrl: user_avatar_url(current_user, size: 120),
+      avatarThumbUrl: user_avatar_url(current_user, size: 32)
     }
   end
 end

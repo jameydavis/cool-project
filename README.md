@@ -31,15 +31,19 @@ source bin/ruby-env
 bin/dev
 ```
 
+Open **http://127.0.0.1:5000** (or http://localhost:5000).
+
 `bin/dev` starts three processes via Foreman:
 
-- Rails server on **http://localhost:3000**
+- Rails server on **http://localhost:5000**
 - JS watcher (esbuild → `app/assets/builds/astryx_app.js`)
 - CSS watcher (esbuild → `app/assets/builds/astryx.css`)
 
 ## Email in development
 
 Password reset and other Devise emails are previewed with [letter_opener](https://github.com/ryanb/letter_opener). When you trigger a mailer (for example, via **Forgot your password?**), the email opens in your default browser instead of being sent to a real inbox.
+
+Email links use the same port as the running app (`PORT`, default **5000**). Restart `bin/dev` after changing the port.
 
 ## Homebrew Ruby note (macOS)
 

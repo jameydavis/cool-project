@@ -1,11 +1,10 @@
 import React from "react";
 import { AppShell } from "@astryxdesign/core/AppShell";
 import { TopNav } from "@astryxdesign/core/TopNav";
-import { TopNavHeading } from "@astryxdesign/core/TopNav";
 import { TopNavItem } from "@astryxdesign/core/TopNav";
-import { Banner } from "@astryxdesign/core/Banner";
 import { Button } from "@astryxdesign/core/Button";
 import { VStack } from "@astryxdesign/core/Layout";
+import { AppBrandHeading } from "./AppBrandHeading";
 
 function SignOutForm({ paths, csrfToken }) {
   return (
@@ -17,20 +16,15 @@ function SignOutForm({ paths, csrfToken }) {
   );
 }
 
-export function AppLayout({ paths, user, flash, authLayout, currentPage, children }) {
+export function AppLayout({ paths, user, authLayout, currentPage, children }) {
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-  const banner = flash?.notice ? (
-    <Banner status="success" title={flash.notice} />
-  ) : flash?.alert ? (
-    <Banner status="error" title={flash.alert} />
-  ) : null;
+  const brandHeading = <AppBrandHeading paths={paths} user={user} />;
 
   if (authLayout) {
     return (
-      <AppShell height="auto" contentPadding={4} banner={banner}>
+      <AppShell height="auto" contentPadding={4}>
         <VStack gap={4} align="center">
-          <TopNavHeading heading="Cool Project" headingHref={paths.root} />
+          {brandHeading}
           {children}
         </VStack>
       </AppShell>
@@ -54,12 +48,8 @@ export function AppLayout({ paths, user, flash, authLayout, currentPage, childre
       height="auto"
       contentPadding={4}
       variant="elevated"
-      banner={banner}
       topNav={
-        <TopNav
-          heading={<TopNavHeading heading="Cool Project" headingHref={paths.root} />}
-          endContent={endContent}
-        />
+        <TopNav heading={brandHeading} endContent={endContent} />
       }
     >
       {children}

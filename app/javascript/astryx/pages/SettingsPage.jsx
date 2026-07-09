@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useToast } from "@astryxdesign/core/Toast";
 import { Card } from "@astryxdesign/core/Card";
 import { Heading, Text } from "@astryxdesign/core/Text";
 import { TextInput } from "@astryxdesign/core/TextInput";
@@ -9,6 +10,8 @@ import { Banner } from "@astryxdesign/core/Banner";
 import { Avatar } from "@astryxdesign/core/Avatar";
 import { VStack, HStack } from "@astryxdesign/core/Layout";
 import { Link } from "@astryxdesign/core/Link";
+import { showToast } from "../components/FlashToasts";
+import { withCacheBust } from "../utils/avatar";
 
 const TIMEZONES = [
   "Eastern Time (US & Canada)",
@@ -20,7 +23,15 @@ const TIMEZONES = [
   "Arizona",
 ];
 
-export function SettingsPage({ paths, settings = {}, csrfToken }) {
+function selectedAvatarFile(value) {
+  if (!value) return null;
+  if (value instanceof File) return value;
+  if (Array.isArray(value)) return value[0] || null;
+  return null;
+}
+
+export function SettingsPage({ paths, settings = {}, csrfToken, onAvatarUpdated }) {
+  const toast = useToast();
   const initial = settings.user || {};
   const [form, setForm] = useState({
     preferredName: initial.preferredName || "",
@@ -34,18 +45,88 @@ export function SettingsPage({ paths, settings = {}, csrfToken }) {
     bio: initial.bio || "",
     timezone: initial.timezone || "",
   });
-  const [avatarFiles, setAvatarFiles] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [savedAvatarUrl, setSavedAvatarUrl] = useState(initial.avatarUrl || null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState(settings.errors || []);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+
+  const pendingAvatarFile = useMemo(() => selectedAvatarFile(avatarFile), [avatarFile]);
+  const displayAvatarUrl = previewUrl || savedAvatarUrl;
+
+  useEffect(() => {
+    if (settings.errors?.length) {
+      showToast(toast, settings.errors.join(" "), "error");
+    }
+  }, [settings.errors, toast]);
+
+  useEffect(() => {
+    if (initial.avatarUrl) {
+      setSavedAvatarUrl(initial.avatarUrl);
+    }
+  }, [initial.avatarUrl]);
+
+  useEffect(() => {
+    if (!pendingAvatarFile) {
+      setPreviewUrl(null);
+      return;
+    }
+
+    const url = URL.createObjectURL(pendingAvatarFile);
+    setPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [pendingAvatarFile]);
 
   const updateField = (field) => (value) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const handleSaveAvatar = async () => {
+    if (!pendingAvatarFile) {
+      showToast(toast, "Choose an image to upload.", "error");
+      return;
+    }
+
+    setIsSavingAvatar(true);
+
+    const body = new FormData();
+    body.append("authenticity_token", csrfToken);
+    body.append("user[avatar]", pendingAvatarFile);
+
+    const response = await fetch(paths.settingsAvatarUpdate, {
+      method: "PATCH",
+      body,
+      headers: { Accept: "application/json" },
+      credentials: "same-origin",
+    });
+
+    setIsSavingAvatar(false);
+
+    if (response.ok) {
+      const payload = await response.json();
+      setSavedAvatarUrl(withCacheBust(payload.avatarUrl));
+      setAvatarFile(null);
+      onAvatarUpdated?.({
+        avatarUrl: payload.avatarUrl,
+        avatarThumbUrl: payload.avatarThumbUrl,
+      });
+      showToast(toast, payload.notice || "Profile photo updated.", "info");
+      return;
+    }
+
+    if (response.status === 422) {
+      const payload = await response.json();
+      showToast(toast, (payload.errors || []).join(" ") || "Unable to save profile photo.", "error");
+      return;
+    }
+
+    showToast(toast, "Unable to save profile photo.", "error");
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
-    setErrors([]);
 
     const body = new FormData();
     body.append("authenticity_token", csrfToken);
@@ -64,11 +145,6 @@ export function SettingsPage({ paths, settings = {}, csrfToken }) {
     body.append("user[bio]", form.bio);
     body.append("user[timezone]", form.timezone);
 
-    if (avatarFiles) {
-      const file = Array.isArray(avatarFiles) ? avatarFiles[0] : avatarFiles;
-      if (file) body.append("user[avatar]", file);
-    }
-
     const response = await fetch(paths.settingsUpdate, {
       method: "PATCH",
       body,
@@ -86,11 +162,12 @@ export function SettingsPage({ paths, settings = {}, csrfToken }) {
 
     if (response.status === 422) {
       const payload = await response.json();
-      setErrors(payload.errors || [ "We couldn't save your settings. Please review the form and try again." ]);
+      const nextErrors = payload.errors || [ "We couldn't save your settings. Please review the form and try again." ];
+      showToast(toast, nextErrors.join(" "), "error");
       return;
     }
 
-    setErrors([ "We couldn't save your settings. Please review the form and try again." ]);
+    showToast(toast, "We couldn't save your settings. Please review the form and try again.", "error");
   };
 
   return (
@@ -109,46 +186,38 @@ export function SettingsPage({ paths, settings = {}, csrfToken }) {
           </VStack>
         )}
 
-        {errors.length > 0 ? (
-          <Banner
-            status="error"
-            title="Unable to save settings"
-            description={
-              <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-                {errors.map((error) => (
-                  <li key={error}>{error}</li>
-                ))}
-              </ul>
-            }
-          />
-        ) : null}
+        <VStack gap={3}>
+          <Heading level={2}>Profile photo</Heading>
+          <HStack gap={3} align="center" wrap="wrap">
+            <Avatar
+              src={displayAvatarUrl || undefined}
+              size="medium"
+              alt="Your profile photo"
+            />
+
+            <VStack gap={2}>
+              <FileInput
+                label="Upload image"
+                description="JPEG, PNG, WebP, or GIF up to 5 MB"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                maxSize={5 * 1024 * 1024}
+                value={avatarFile}
+                onChange={setAvatarFile}
+              />
+
+              <Button
+                label="Save photo"
+                variant="secondary"
+                onClick={handleSaveAvatar}
+                isLoading={isSavingAvatar}
+                isDisabled={!pendingAvatarFile}
+              />
+            </VStack>
+          </HStack>
+        </VStack>
 
         <form onSubmit={handleSubmit}>
           <VStack gap={5}>
-            <VStack gap={3}>
-              <Heading level={2}>Profile photo</Heading>
-              <HStack gap={3} align="center" wrap="wrap">
-                {initial.avatarUrl ? (
-                  <img
-                    src={initial.avatarUrl}
-                    alt="Your profile photo"
-                    style={{ width: 96, height: 96, borderRadius: "50%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <Avatar name={form.preferredName || initial.email || "User"} size="medium" />
-                )}
-
-                <FileInput
-                  label="Upload image"
-                  description="JPEG, PNG, WebP, or GIF up to 5 MB"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  maxSize={5 * 1024 * 1024}
-                  value={avatarFiles}
-                  onChange={(files) => setAvatarFiles(files)}
-                />
-              </HStack>
-            </VStack>
-
             <VStack gap={3}>
               <Heading level={2}>About you</Heading>
 

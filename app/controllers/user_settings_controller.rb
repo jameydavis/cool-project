@@ -1,4 +1,6 @@
 class UserSettingsController < ApplicationController
+  include UserAvatarHelper
+
   before_action :authenticate_user!
 
   def edit
@@ -35,11 +37,29 @@ class UserSettingsController < ApplicationController
     end
   end
 
+  def avatar
+    @user = current_user
+
+    if @user.update(avatar: avatar_params[:avatar])
+      render json: {
+        notice: "Profile photo updated.",
+        avatarUrl: user_avatar_url(@user, size: 120),
+        avatarThumbUrl: user_avatar_url(@user, size: 32)
+      }
+    else
+      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
+
+  def avatar_params
+    params.require(:user).permit(:avatar)
+  end
 
   def user_settings_params
     params.require(:user).permit(
-      :avatar, :preferred_name, :phone_number,
+      :preferred_name, :phone_number,
       :address_line1, :address_line2, :city, :state,
       :postal_code, :country, :bio, :timezone
     )
@@ -69,8 +89,12 @@ class UserSettingsController < ApplicationController
         country: user.country,
         bio: user.bio,
         timezone: user.timezone,
-        avatarUrl: user.avatar.attached? ? url_for(user.avatar.variant(resize_to_fill: [ 120, 120 ])) : nil
+        avatarUrl: avatar_url_for(user)
       }
     }
+  end
+
+  def avatar_url_for(user)
+    user_avatar_url(user, size: 120)
   end
 end
