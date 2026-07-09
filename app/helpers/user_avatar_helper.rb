@@ -1,7 +1,8 @@
 module UserAvatarHelper
-  def user_avatar_url(user, size: 120)
+  def user_avatar_url(user, size: nil)
     return unless user&.avatar&.attached?
 
-    url_for(user.avatar.variant(resize_to_fill: [ size, size ]))
+    # Serve the original blob so avatars work without libvips/ImageMagick.
+    url_for(user.avatar)
   end
 end

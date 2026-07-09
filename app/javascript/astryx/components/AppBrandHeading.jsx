@@ -10,7 +10,8 @@ export function AppBrandHeading({ paths, user }) {
       logo={
         user ? (
           <Avatar
-            src={user.avatarThumbUrl}
+            key={user.avatarThumbUrl || "default-avatar"}
+            src={user.avatarThumbUrl || undefined}
             size="small"
             alt="Your profile photo"
           />

@@ -48,7 +48,7 @@ class UserSettingsControllerTest < ActionDispatch::IntegrationTest
 
     payload = JSON.parse(response.body)
     assert_equal "Profile photo updated.", payload["notice"]
-    assert_includes payload["avatarUrl"], "/rails/active_storage"
-    assert_includes payload["avatarThumbUrl"], "/rails/active_storage"
+    assert_includes payload["avatarUrl"], "/rails/active_storage/blobs/"
+    assert_includes payload["avatarThumbUrl"], "/rails/active_storage/blobs/"
   end
 end

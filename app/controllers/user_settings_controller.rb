@@ -39,8 +39,13 @@ class UserSettingsController < ApplicationController
 
   def avatar
     @user = current_user
+    file = avatar_params[:avatar]
 
-    if @user.update(avatar: avatar_params[:avatar])
+    if file.blank?
+      return render json: { errors: [ "Please choose an image to upload." ] }, status: :unprocessable_entity
+    end
+
+    if @user.update(avatar: file)
       render json: {
         notice: "Profile photo updated.",
         avatarUrl: user_avatar_url(@user, size: 120),

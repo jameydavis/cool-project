@@ -97,7 +97,10 @@ export function SettingsPage({ paths, settings = {}, csrfToken, onAvatarUpdated 
     const response = await fetch(paths.settingsAvatarUpdate, {
       method: "PATCH",
       body,
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        "X-CSRF-Token": csrfToken,
+      },
       credentials: "same-origin",
     });
 
@@ -190,6 +193,7 @@ export function SettingsPage({ paths, settings = {}, csrfToken, onAvatarUpdated 
           <Heading level={2}>Profile photo</Heading>
           <HStack gap={3} align="center" wrap="wrap">
             <Avatar
+              key={displayAvatarUrl || "default-avatar"}
               src={displayAvatarUrl || undefined}
               size="medium"
               alt="Your profile photo"
