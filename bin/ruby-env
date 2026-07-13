@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 # Homebrew Ruby installs system gems as read-only. Use a user-writable GEM_HOME
 # so Bundler can install gems and regenerate plugins (e.g. rdoc_plugin.rb).
+#
+# Always override GEM_HOME/GEM_PATH. Tools like chruby leave GEM_HOME pointed at
+# another Ruby (e.g. 3.1.2), which makes Bundler ignore native extensions and
+# fail with "missing extensions" / "Could not find ... in locally installed gems".
+
+# Drop chruby/rbenv leftovers that would otherwise keep pointing at the wrong Ruby.
+unset RUBY_ROOT RUBY_ENGINE RUBY_VERSION RUBYOPT GEM_ROOT
 
 if [ -d "/opt/homebrew/opt/ruby/bin" ]; then
   export PATH="/opt/homebrew/opt/ruby/bin:${PATH}"
 fi
 
-export GEM_HOME="${GEM_HOME:-${HOME}/.local/share/gem/ruby/4.0.0}"
+export GEM_HOME="${HOME}/.local/share/gem/ruby/4.0.0"
 export GEM_PATH="${GEM_HOME}:/opt/homebrew/lib/ruby/gems/4.0.0"
 export PATH="${GEM_HOME}/bin:${PATH}"

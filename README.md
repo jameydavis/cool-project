@@ -47,13 +47,16 @@ Email links use the same port as the running app (`PORT`, default **5000**). Res
 
 ## Homebrew Ruby note (macOS)
 
-If `bundle install` fails with a permission error on `rdoc_plugin.rb`, always run:
+Always run:
 
 ```bash
 source bin/ruby-env
 ```
 
-before Bundler commands, or add the exports from `bin/ruby-env` to your `~/.zshrc`.
+before Bundler/Rails commands (or add those exports to your `~/.zshrc`). This is required if:
+
+- `bundle install` fails with a permission error on `rdoc_plugin.rb`
+- you use **chruby** (or similar) and see “missing extensions” / gems not found — chruby leaves `GEM_HOME` pointed at another Ruby, and `bin/ruby-env` overrides that
 
 ## Tests
 
